@@ -1,6 +1,14 @@
 # dbmig – masowa migracja baz MySQL stron na nową instancję (hosting współdzielony, DirectAdmin)
 
-[![Release](https://img.shields.io/github/v/release/nieprzecietny/dbmig?label=release)](https://github.com/nieprzecietny/dbmig/releases/latest) [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE) [![Sponsor](https://img.shields.io/badge/podzi%C4%99kuj-zosta%C5%84%20sponsorem%20%E2%9D%A4-ff69b4?logo=githubsponsors)](https://github.com/sponsors/nieprzecietny)
+<p align="center">
+  <a href="https://github.com/sponsors/nieprzecietny">
+    <img src="https://img.shields.io/badge/%E2%9D%A4%EF%B8%8F%20%20Podzi%C4%99kuj%20zostaj%C4%85c%20sponsorem-ff2d6b?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Podziękuj zostając sponsorem" height="48">
+  </a>
+  <br>
+  <sub>Zaoszczędziło Ci to parę godzin klikania w panelu? Kliknij wyżej. / Saved you a few hours? Sponsor the author.</sub>
+</p>
+
+[![Release](https://img.shields.io/github/v/release/nieprzecietny/dbmig?label=release)](https://github.com/nieprzecietny/dbmig/releases/latest) [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 Jeden skrypt PHP uruchamiany **na serwerze przez SSH**, który dla wszystkich stron na koncie hostingowym:
 
