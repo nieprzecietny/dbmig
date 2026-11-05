@@ -1,0 +1,26 @@
+<?php return array (
+  'parameters' =>
+  array (
+    'database_host' => 'mysql57',
+    'database_port' => '',
+    'database_name' => 'acc_shop',
+    'database_user' => 'acc_shop',
+    'database_password' => 'shopPass#1',
+    'database_prefix' => 'ps_',
+    'database_engine' => 'InnoDB',
+    'mailer_transport' => 'smtp',
+    'mailer_host' => '127.0.0.1',
+    'mailer_user' => NULL,
+    'mailer_password' => NULL,
+    'secret' => 'xyz',
+    'ps_caching' => 'CacheMemcache',
+    'ps_cache_enable' => false,
+    'ps_creation_date' => '2020-01-01',
+    'locale' => 'pl-PL',
+    'use_debug_toolbar' => true,
+    'cookie_key' => 'abc',
+    'cookie_iv' => 'def',
+    'new_cookie_key' => 'def',
+    'api_public_key' => '',
+  ),
+);

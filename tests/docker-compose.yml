@@ -1,0 +1,37 @@
+services:
+  mysql57:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./sql/old-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+  mysql8:
+    image: mysql:8.0
+    command: --log-bin-trust-function-creators=1
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./sql/new-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+  php:
+    build: .
+    depends_on:
+      mysql57:
+        condition: service_healthy
+      mysql8:
+        condition: service_healthy
+    volumes:
+      - ..:/app:ro
+      - ./sites:/fixtures:ro
+      - .:/tests:ro
+    working_dir: /work
+    command: bash /tests/run.sh

@@ -1,0 +1,9 @@
+# katalog roboczy skryptu (zrzuty, backupy, hasla, stan)
+dbmig-work/
+# lokalne projekty stron (nie sa czescia narzedzia)
+cjo-majami.pl/
+# tymczasowe
+*.log
+*.bak
+*.dbmig-tmp
+.claude/
