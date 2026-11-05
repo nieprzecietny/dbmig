@@ -1,5 +1,7 @@
 # dbmig – masowa migracja baz MySQL stron na nową instancję (hosting współdzielony, DirectAdmin)
 
+[![Release](https://img.shields.io/github/v/release/nieprzecietny/dbmig?label=release)](https://github.com/nieprzecietny/dbmig/releases/latest) [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE) [![Sponsor](https://img.shields.io/badge/podzi%C4%99kuj-zosta%C5%84%20sponsorem%20%E2%9D%A4-ff69b4?logo=githubsponsors)](https://github.com/sponsors/nieprzecietny)
+
 Jeden skrypt PHP uruchamiany **na serwerze przez SSH**, który dla wszystkich stron na koncie hostingowym:
 
 1. znajduje pliki konfiguracyjne i wyciąga z nich host / nazwę bazy / login / hasło (WordPress, Joomla, Drupal, PrestaShop, OpenCart, Magento 2, Moodle, Laravel, Symfony, własne skrypty PHP),
@@ -300,6 +302,12 @@ Streszczenie dla modeli językowych jest też w [`llms.txt`](llms.txt), a wskaz�
 migracja bazy danych na nową instancję MySQL, cyber_Folks DB Legacy, MariaDB 10.6 → 10.11, DirectAdmin „Zarządzanie MySQL”, hosting współdzielony, masowa zmiana `wp-config.php`, przeniesienie wielu baz WordPress/PrestaShop/Joomla/Symfony/Laravel jednym skryptem, `mysqldump` bez SUPER (`DEFINER`), zmiana hosta bazy `localhost` → `127.0.0.1:3308`, automatyczny rollback konfiguracji.
 
 shared hosting MySQL instance migration, DirectAdmin bulk database migration, move all sites to a new MariaDB instance, WordPress wp-config.php mass update, mysqldump without SUPER privilege, cyber_Folks legacy database migration tool, PHP CLI.
+
+## Podziękowanie
+
+Jeśli ten skrypt zaoszczędził Ci parę godzin klikania w panelu, możesz podziękować, zostając sponsorem: **[github.com/sponsors/nieprzecietny](https://github.com/sponsors/nieprzecietny)** (przycisk „Sponsor” u góry repozytorium). Zgłoszenia błędów i pull requesty z obsługą kolejnych systemów też są mile widziane.
+
+*If it saved you a few hours of clicking, consider [sponsoring](https://github.com/sponsors/nieprzecietny).*
 
 ## Licencja
 
