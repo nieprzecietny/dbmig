@@ -1,0 +1,48 @@
+# dbmig
+
+> Single-file PHP CLI tool that migrates the MySQL/MariaDB databases of every website on a shared-hosting account (DirectAdmin layout, built for cyber_Folks "DB Legacy" -> new MariaDB instance) to a new database instance: scans config files for credentials, creates the new databases through the panel, dumps/imports/verifies each database and rewrites the config files with backup, syntax check, read-back, HTTP probe and automatic rollback. Never modifies or deletes the old databases. Messages are in Polish.
+
+Repository: https://github.com/nieprzecietny/dbmig
+Download: https://github.com/nieprzecietny/dbmig/releases/latest/download/dbmig.php
+License: MIT
+
+## When to use it
+
+- A shared hosting provider (cyber_Folks, any DirectAdmin host) offers a newer MySQL/MariaDB instance and asks you to move each database yourself (create new DB in the panel, export, import, update the application's config).
+- You have many sites of different kinds (WordPress, Joomla, Drupal, PrestaShop, OpenCart, Magento 2, Moodle, Laravel, Symfony, custom PHP) and want one repeatable, reversible procedure.
+
+## Workflow (run on the server over SSH)
+
+1. `php dbmig.php scan` - finds config files under ~/domains, extracts host/db/user/password, tests connections, writes dbmig-work/inventory.csv and dbmig-work/mapping.conf.
+2. `php dbmig.php plan --all --new-host=127.0.0.1:3308` - fills mapping.conf with new DB names/users/URL-safe passwords and action=migrate. Review mapping.conf; set action=skip for dead copies.
+3. `php dbmig.php create-db --all --da-preset=cyberfolks --da-instance=2 --da-url=https://sXX.cyber-folks.pl:2223` - creates the databases through the panel plugin (password from DA_PASS env or prompt). Or create them manually in the panel.
+4. `php dbmig.php check` - validates everything, changes nothing. Non-zero exit = stop.
+5. `php dbmig.php migrate --site example.pl --dry-run`, then `php dbmig.php migrate --site example.pl`, then `php dbmig.php migrate --all`.
+6. Test sites manually. `php dbmig.php rollback --site example.pl` restores the config files (old DB is untouched).
+7. After a few days: delete legacy DBs in the panel, remove dbmig-work/dumps, protect/delete mapping.conf and inventory.* (they contain passwords).
+
+## Non-interactive use
+
+- `--yes` skips confirmations, `--no-color` plain output, `--dry-run` shows planned changes.
+- Env: DA_PASS (panel password), DA_URL, DA_PRESET, DA_INSTANCE, DBMIG_WORKDIR, DBMIG_MYSQL, DBMIG_MYSQLDUMP.
+- Exit codes: 0 ok, 1 error (stopped before the next change; state in dbmig-work/state.json), 2 usage.
+- mapping.conf is the single source of decisions (per-file sections: cms, file, url, old_*, action, new_*; [defaults] section fills blanks).
+
+## Safety model
+
+- Old databases are only read (mysqldump). There is no command that drops or alters them.
+- Every config file is backed up to dbmig-work/backups/<id>/<timestamp>/ before editing; only string literals are replaced (PHP files parsed with the tokenizer, never executed).
+- After writing: php -l, re-parse and compare, wait --http-delay seconds (opcache), HTTP probe for DB-error messages / 5xx; on failure the backup is restored automatically.
+- Stops at the first error unless --continue-on-error. Import only into an empty database (clean-new to retry).
+- Dumps strip DEFINER=, rename `olddb`. references in views/triggers/routines, retry without --routines/--events when privileges are missing, fall back to MYSQL_PWD when the mysqldump wrapper rejects --defaults-extra-file.
+
+## Known pitfalls it handles or warns about
+
+Symfony DATABASE_URL passwords with %XX sequences break %env(resolve:...)% (plan generates URL-safe passwords; `repass` fixes existing ones through the panel); .env.local.php overrides .env; opcache delay; MySQL error 1419 (binlog without log_bin_trust_function_creators); DB name hard-coded in SQL queries of custom apps; sites still using mysql_* functions cannot run on PHP 7+ (independent of the DB migration).
+
+## Files
+
+- dbmig.php - the whole tool (PHP >= 7.2, tokenizer + mysqli; mysqldump, mysql, curl on PATH).
+- README.md - full Polish documentation with placeholders <KONTO>, <SERWER>, <HOST_NOWEJ_INSTANCJI>, <NR_INSTANCJI>, <DOMENA>.
+- tests/ - Docker end-to-end test (MySQL 5.7 -> 8.0, 16 fixture configs, DirectAdmin/plugin mock): `cd tests && docker compose up --build --abort-on-container-exit --exit-code-from php`.
+- AGENTS.md - notes for coding agents changing this repository.

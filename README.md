@@ -46,9 +46,11 @@ Nie wpisuj `localhost:port` jako hosta nowej bazy: PHP zignoruje port i połącz
 
 ```bash
 mkdir -p ~/dbmig && cd ~/dbmig          # NIE w public_html
-# wgraj dbmig.php (scp / sftp)
+curl -LO https://github.com/nieprzecietny/dbmig/releases/latest/download/dbmig.php
 php dbmig.php --help
 ```
+
+Bez `curl` na serwerze: pobierz `dbmig.php` z [Releases](https://github.com/nieprzecietny/dbmig/releases) i wgraj przez SFTP.
 
 Katalog roboczy `dbmig-work/` (zrzuty, backupy, mapping z hasłami, logi, stan) powstaje obok skryptu z prawami `700` i jest pomijany przy skanowaniu. Skrypt odmawia pracy, gdy katalog roboczy leży w `public_html`.
 
@@ -246,6 +248,58 @@ W `tests/` jest scenariusz end-to-end na Dockerze: MySQL 5.7 jako stara instancj
 ```bash
 cd tests && docker compose up --build --abort-on-container-exit --exit-code-from php
 ```
+
+## English quick start
+
+Run on the hosting server over SSH (DirectAdmin layout `~/domains/<domain>/public_html`):
+
+```bash
+mkdir -p ~/dbmig && cd ~/dbmig
+curl -LO https://github.com/nieprzecietny/dbmig/releases/latest/download/dbmig.php
+php dbmig.php scan                                   # inventory of all sites + their DB credentials -> dbmig-work/mapping.conf
+php dbmig.php plan --all --new-host=127.0.0.1:3308   # generate names/users/passwords of the new databases
+php dbmig.php create-db --all --da-preset=cyberfolks --da-instance=2 --da-url=https://sXX.cyber-folks.pl:2223
+php dbmig.php check                                  # connections, empty new DBs, files, HTTP baseline - no changes
+php dbmig.php migrate --site example.pl --dry-run
+php dbmig.php migrate --site example.pl              # dump -> import -> verify -> rewrite config -> HTTP probe (auto-rollback)
+php dbmig.php migrate --all
+php dbmig.php rollback --site example.pl             # back to the old DB (left untouched) if anything is wrong
+```
+
+Messages are in Polish; the command reference above and `php dbmig.php --help` list every option. Exit code 0 = success, 1 = error (nothing further was touched), 2 = usage error.
+
+## Dla agentów AI i automatyzacji
+
+Skrypt da się prowadzić bez terminala interaktywnego. Zasady:
+
+- Potwierdzenia pomija `--yes`; kolory wyłącza `--no-color`; hasło do panelu podaj przez zmienną `DA_PASS` (nigdy w linii poleceń), adres panelu przez `DA_URL`, preset przez `DA_PRESET`, instancję przez `DA_INSTANCE`, katalog roboczy przez `DBMIG_WORKDIR`.
+- Każda komenda zwraca kod wyjścia: `0` sukces, `1` błąd (skrypt zatrzymał się przed kolejną zmianą; stan w `dbmig-work/state.json`), `2` zły sposób użycia.
+- Przed zmianą czegokolwiek uruchom `check` i `migrate --dry-run`; niezerowy kod = nie kontynuuj.
+- Plik `dbmig-work/mapping.conf` jest jedynym źródłem decyzji: `action = migrate` włącza wiersz. Edytuj go zamiast obchodzić skrypt.
+- Nigdy nie usuwaj starych baz skryptem – nie ma na to komendy i to celowe. Kasowanie legacy robi człowiek w panelu po testach.
+- Log: `dbmig-work/logs/dbmig.log` (bez haseł). `inventory.csv` i `mapping.conf` zawierają hasła, trzymaj je poza `public_html`.
+
+Minimalny przepis nieinteraktywny:
+
+```bash
+export DBMIG_WORKDIR=$HOME/dbmig/dbmig-work DA_URL=https://sXX.cyber-folks.pl:2223 DA_PRESET=cyberfolks DA_INSTANCE=2 DA_PASS='...'
+php dbmig.php scan --no-color --no-db-test
+php dbmig.php plan --all --new-host=127.0.0.1:3308 --no-color
+# (edycja mapping.conf: action = skip dla kopii/martwych stron)
+php dbmig.php create-db --all --yes --no-color     || exit 1
+php dbmig.php check --no-color                     || exit 1
+php dbmig.php migrate --all --dry-run --no-color   || exit 1
+php dbmig.php migrate --all --yes --no-color       || exit 1
+php dbmig.php status --no-color
+```
+
+Streszczenie dla modeli językowych jest też w [`llms.txt`](llms.txt), a wskazówki dla agentów pracujących nad kodem w [`AGENTS.md`](AGENTS.md).
+
+## Słowa kluczowe
+
+migracja bazy danych na nową instancję MySQL, cyber_Folks DB Legacy, MariaDB 10.6 → 10.11, DirectAdmin „Zarządzanie MySQL”, hosting współdzielony, masowa zmiana `wp-config.php`, przeniesienie wielu baz WordPress/PrestaShop/Joomla/Symfony/Laravel jednym skryptem, `mysqldump` bez SUPER (`DEFINER`), zmiana hosta bazy `localhost` → `127.0.0.1:3308`, automatyczny rollback konfiguracji.
+
+shared hosting MySQL instance migration, DirectAdmin bulk database migration, move all sites to a new MariaDB instance, WordPress wp-config.php mass update, mysqldump without SUPER privilege, cyber_Folks legacy database migration tool, PHP CLI.
 
 ## Licencja
 
